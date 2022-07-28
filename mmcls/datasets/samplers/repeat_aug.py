@@ -29,7 +29,8 @@ class RepeatAugSampler(Sampler):
                  num_repeats=3,
                  selected_round=256,
                  selected_ratio=0,
-                 seed=0):
+                 seed=0,
+                 device='cuda'):
         default_rank, default_world_size = get_dist_info()
         rank = default_rank if rank is None else rank
         num_replicas = (
@@ -65,7 +66,7 @@ class RepeatAugSampler(Sampler):
         # in the same order based on the same seed. Then different ranks
         # could use different indices to select non-overlapped data from the
         # same data list.
-        self.seed = sync_random_seed(seed)
+        self.seed = sync_random_seed(seed, device=device)
 
     def __iter__(self):
         # deterministically shuffle based on epoch

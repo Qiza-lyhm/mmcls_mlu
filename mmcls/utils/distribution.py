@@ -21,6 +21,9 @@ def wrap_non_distributed_model(model, device='cuda', dim=0, *args, **kwargs):
         model = MMDataParallel(model.cuda(), dim=dim, *args, **kwargs)
     elif device == 'cpu':
         model = model.cpu()
+    elif device == 'mlu':
+        from mmcv.device.mlu import MLUDataParallel
+        model = MLUDataParallel(model.mlu(), dim=dim, *args, **kwargs)
     elif device == 'ipu':
         model = model.cpu()
     elif device == 'mps':
@@ -52,7 +55,11 @@ def wrap_distributed_model(model, device='cuda', *args, **kwargs):
     if device == 'cuda':
         from mmcv.parallel import MMDistributedDataParallel
         model = MMDistributedDataParallel(model.cuda(), *args, **kwargs)
+    elif device == 'mlu':
+        from mmcv.device.mlu import MLUDistributedDataParallel
+        model = MLUDistributedDataParallel(model.mlu(), *args, **kwargs)
     else:
         raise RuntimeError(f'Unavailable device "{device}"')
 
     return model
+

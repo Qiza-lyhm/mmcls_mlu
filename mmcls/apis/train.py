@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import random
 import warnings
+import os
 
 import numpy as np
 import torch
@@ -131,7 +132,8 @@ def train_model(model,
         model = wrap_distributed_model(
             model,
             cfg.device,
-            device_ids=[torch.cuda.current_device()],
+            device_ids=[torch.cuda.current_device() if cfg.device == 'cuda' \
+                        else int(os.environ['LOCAL_RANK'])],
             broadcast_buffers=False,
             find_unused_parameters=find_unused_parameters)
     else:

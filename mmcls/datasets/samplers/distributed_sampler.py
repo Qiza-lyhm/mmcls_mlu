@@ -15,7 +15,8 @@ class DistributedSampler(_DistributedSampler):
                  rank=None,
                  shuffle=True,
                  round_up=True,
-                 seed=0):
+                 seed=0,
+                 device='cuda'):
         super().__init__(dataset, num_replicas=num_replicas, rank=rank)
         self.shuffle = shuffle
         self.round_up = round_up
@@ -30,7 +31,7 @@ class DistributedSampler(_DistributedSampler):
         # in the same order based on the same seed. Then different ranks
         # could use different indices to select non-overlapped data from the
         # same data list.
-        self.seed = sync_random_seed(seed)
+        self.seed = sync_random_seed(seed, device=device)
 
     def __iter__(self):
         # deterministically shuffle based on epoch

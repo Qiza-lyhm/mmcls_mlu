@@ -16,6 +16,11 @@ try:
 except ImportError:
     IS_IPU_AVAILABLE = False
 
+try:
+    from mmcv.utils import IS_MLU_AVAILABLE
+except ImportError:
+    IS_MLU_AVAILABLE = False
+
 if platform.system() != 'Windows':
     # https://github.com/pytorch/pytorch/issues/973
     import resource
@@ -101,7 +106,9 @@ def build_dataloader(dataset,
         DataLoader: A PyTorch dataloader.
     """
     rank, world_size = get_dist_info()
-
+    default_device = 'cuda'
+    if IS_MLU_AVAILABLE:
+        default_device = 'mlu'
     # Custom sampler logic
     if sampler_cfg:
         # shuffle=False when val and test
@@ -110,7 +117,7 @@ def build_dataloader(dataset,
             sampler_cfg,
             default_args=dict(
                 dataset=dataset, num_replicas=world_size, rank=rank,
-                seed=seed))
+                seed=seed, device=default_device))
     # Default sampler logic
     elif dist:
         sampler = build_sampler(
@@ -121,7 +128,8 @@ def build_dataloader(dataset,
                 rank=rank,
                 shuffle=shuffle,
                 round_up=round_up,
-                seed=seed))
+                seed=seed,
+                device=default_device))
     else:
         sampler = None
 
