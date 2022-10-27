@@ -6,7 +6,7 @@ import torch
 import torch.distributed as dist
 from mmcv.runner import OptimizerHook, get_dist_info
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
-                          _unflatten_dense_tensors)
+                          _unflatten_dense_tensors, auto_select_device)
 
 
 def _allreduce_coalesced(tensors, world_size, bucket_size_mb=-1):
@@ -59,7 +59,7 @@ class DistOptimizerHook(OptimizerHook):
         runner.optimizer.step()
 
 
-def sync_random_seed(seed=None, device='cuda'):
+def sync_random_seed(seed=None, device=None):
     """Make sure different ranks share the same seed.
 
     All workers must call this function, otherwise it will deadlock.
@@ -81,6 +81,8 @@ def sync_random_seed(seed=None, device='cuda'):
     Returns:
         int: Seed to be used.
     """
+    if device is None:
+        device = auto_select_device()
     if seed is None:
         seed = np.random.randint(2**31)
     assert isinstance(seed, int)
